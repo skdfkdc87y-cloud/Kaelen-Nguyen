@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>QR Security Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* Thay thế 'IMG_8622.jpeg' bằng đường dẫn ảnh của bạn */
+            background: #2e3045 url('IMG_8622.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            min-height: 50vh;
+            overflow: hidden;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding-top: 60px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .user-info {
+            font-size: 1.15rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #e0c9a6;
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.5px;
+        }
+
+        /* Thẻ QR chính */
+        .qr-card {
+            background: white;
+            border-radius: 12px;
+            margin: 0 42px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Phần tiêu đề Vàng - Đã chỉnh lại tỉ lệ padding chuẩn */
+        .qr-header {
+            background-color: #f5c542;
+            color: white;
+            padding: 22px 15px; 
+            font-size: 0.85rem;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+
+        /* Phần thân Trắng */
+        .qr-body {
+            padding: 20px 10px 30px 10px;
+            color: #333;
+        }
+
+        /* Lỗ khuyết (Notch) - Đã chỉnh vị trí top để khớp đường phân cách */
+        .notch {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background-color: #2e3045; /* Trùng màu nền để tạo hiệu ứng khuyết */
+            border-radius: 50%;
+            top: 54px; /* Vị trí chuẩn giữa vàng và trắng */
+            z-index: 2;
+        }
+        .notch-left { left: -7px; }
+        .notch-right { right: -7px; }
+
+        #current-time {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            letter-spacing: 0.2px;
+        }
+
+        .qr-image-container {
+            width: 80%; /* Thu nhỏ lại một chút để viền trắng rộng ra giống mẫu */
+            margin: 0 auto;
+        }
+
+        .ewm {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .refresh-text {
+            color: #999;
+            font-size: 0.8rem;
+            display: block;
+            margin: 15px 0 10px 0;
+            text-decoration: none;
+        }
+
+        .status-active {
+            color: #2ecc71;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-top: 5px;
+            animation: breath 2.5s infinite ease-in-out;
+        }
+
+        #timer-up {
+            color: #2ecc71;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        @keyframes breath {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .footer-note {
+            margin: 35px 45px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: #e0c9a6;
+            text-align: left;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<div class="container">
+    <div class="user-info">V25090035(Kaelen Nguyen)</div>
+
+    <div class="qr-card">
+        <div class="qr-header">
+            将二维码对准扫描器刷码出场
+        </div>
+        
+        <div class="notch notch-left"></div>
+        <div class="notch notch-right"></div>
+
+        <div class="qr-body">
+            <div id="current-time"></div>
+            
+            <div class="qr-image-container">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=KaelenNguyen" class="ewm">
+            </div>
+
+            <span class="refresh-text">刷新二维码</span>
+            
+            <div class="status-active">已生效</div>
+            <div id="timer-up">00:00</div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        尊敬的员工您好，您已进入企业涉密区域，出于企业安全考虑，您的手机摄像头将被禁止拍摄，感谢您的配合。
+    </div>
+</div>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('current-time').textContent = `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+    }
+
+    // Logic đếm tăng (Count-up)
+    let startTime = localStorage.getItem("qrStartTimeCounter");
+    if (!startTime) {
+        startTime = Date.now();
+        localStorage.setItem("qrStartTimeCounter", startTime);
+    } else {
+        startTime = parseInt(startTime);
+    }
+
+    function updateTimer() {
+        let now = Date.now();
+        let diffInSecs = Math.floor((now - startTime) / 1000);
+        
+        // Tự động reset sau 12 tiếng
+        if (diffInSecs >= 43200) {
+            startTime = Date.now();
+            localStorage.setItem("qrStartTimeCounter", startTime);
+            diffInSecs = 0;
+        }
+
+        const mins = Math.floor((diffInSecs % 3600) / 60);
+        const secs = diffInSecs % 60;
+        
+        // Hiển thị định dạng mm:ss như trong ảnh
+        document.getElementById('timer-up').textContent = 
+            `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    setInterval(updateClock, 1000);
+    setInterval(updateTimer, 1000);
+    updateClock();
+    updateTimer();
+</script>
+
+</body>
+</html>
