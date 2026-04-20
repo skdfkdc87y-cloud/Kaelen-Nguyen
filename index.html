@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Security Access</title>
+    <style>
+        /* GIAO DIỆN TỔNG THỂ */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans', sans-serif;
+            background-color: #2c2e3e;
+            color: #e0c9a6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .zhengti {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .juzuo1 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* KHUNG QR */
+        .erweima {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            color: #333;
+        }
+
+        .saomatishi {
+            background-color: #f5c542;
+            padding: 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .qr-content {
+            padding: 25px;
+        }
+
+        #dateTime00 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        /* ẢNH QR CỦA BẠN */
+        .ewm {
+            width: 220px;
+            height: 220px;
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+
+        .shuaxinerweima {
+            display: block;
+            margin-top: 15px;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        /* TRẠNG THÁI & ĐẾM GIỜ */
+        .yishengxiao {
+            color: #2ecc71;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        /* Hiệu ứng nhịp thở cho chữ "Đã hiệu lực" */
+        .word_breath {
+            animation: breath 2s infinite ease-in-out;
+        }
+
+        @keyframes breath {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        #dateTime3 {
+            color: #2ecc71;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* THÔNG BÁO DƯỚI CÙNG */
+        .dierhang {
+            margin-top: 30px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #b5a184;
+            text-align: left;
+            padding: 0 10px;
+        }
+
+        /* Trang trí 2 lỗ bấm bên cạnh card */
+        .yuant {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #2c2e3e;
+            border-radius: 50%;
+            top: 45px;
+        }
+        .yuan1 { left: -10px; }
+        .yuan2 { right: -10px; }
+    </style>
+</head>
+<body>
+
+<div class="zhengti">
+    <div class="juzuo1">V25090035(Nguyễn Tất Khanh)</div>
+    
+    <div class="erweima">
+        <div class="saomatishi" id="biaoti">将二维码对准扫描器扫码进出场</div>
+        
+        <div class="yuan1 yuant"></div>
+        <div class="yuan2 yuant"></div>
+
+        <div class="qr-content">
+            <div id="dateTime00"></div>
+            
+            <div id="neirong">
+                <img class="ewm" src="./ewm.gif" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=example'">
+            </div>
+
+            <a class="shuaxinerweima" href="javascript:location.reload()">刷新二维码</a>
+            
+            <div class="yishengxiao word_breath" onclick="changetxt()">已生效</div>
+            
+            <div id="dateTime3">00:00</div>
+        </div>
+    </div>
+
+    <div class="dierhang">
+        尊敬的员工您好，您已进入企业涉密区域，出于企业安全考虑，您的手机摄像头将被禁止拍摄，感谢您的配合。
+    </div>
+</div>
+
+<script>
+    // 1. Định dạng ngày tháng
+    Date.prototype.format = function (fmt) {
+        var o = {
+            "y+": this.getFullYear(),
+            "M+": this.getMonth() + 1,
+            "d+": this.getDate(),
+            "h+": this.getHours(),
+            "m+": this.getMinutes(),
+            "s+": this.getSeconds(),
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+
+    // 2. Cập nhật đồng hồ hệ thống
+    setInterval(function () {
+        const dt = document.getElementById('dateTime00');
+        if (dt) {
+            dt.innerHTML = (new Date()).format('yyyy-M-d hh:mm:ss');
+        }
+    }, 1000);
+
+    // 3. Logic Đếm thời gian (Sử dụng LocalStorage của bạn)
+    let startTime = localStorage.getItem("startTime");
+    if (!startTime) {
+        startTime = Date.now();
+        localStorage.setItem("startTime", startTime);
+    } else {
+        startTime = parseInt(startTime);
+    }
+
+    setInterval(function () {
+        let diff = Math.floor((Date.now() - startTime) / 1000);
+        let hrs = Math.floor(diff / 3600);
+        let mins = Math.floor((diff % 3600) / 60);
+        let secs = diff % 60;
+
+        if (hrs >= 12) {
+            startTime = Date.now();
+            localStorage.setItem("startTime", startTime);
+            hrs = 0; mins = 0; secs = 0;
+        }
+
+        let display = (hrs > 0 ? hrs + ':' : '') + 
+                      (mins < 10 ? '0' : '') + mins + ':' + 
+                      (secs < 10 ? '0' : '') + secs;
+        document.getElementById('dateTime3').innerHTML = display;
+    }, 1000);
+
+    // 4. Hàm khi click vào "Đã hiệu lực"
+    function changetxt(){
+        document.getElementById('biaoti').innerText = "您的设备已符合安全规范";
+        document.getElementById('neirong').innerHTML = "<div style='padding:20px; color:#2ecc71; font-size:4rem;'>✓</div><p style='font-weight:bold; font-size:1.2rem;'>进场成功</p>";
+        // Ẩn luôn nút refresh và đếm giờ cho giống thật
+        document.querySelector('.shuaxinerweima').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
